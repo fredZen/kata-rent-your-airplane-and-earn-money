@@ -1,7 +1,6 @@
 {expect} = chai
+{profit} = lags
 
-describe "Unit test", ->
-  it "can fail", ->
-    (expect 2).to.equal 1
-  it "can pass", ->
-    (expect 2).to.equal 2
+describe "profit", ->
+  it "is 0 when there are no orders", ->
+    (expect profit []).to.equal 0
