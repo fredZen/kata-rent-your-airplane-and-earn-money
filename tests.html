@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <link href="mocha.css" rel="stylesheet">
+    <title></title>
+</head>
+<body>
+<div id="mocha"></div>
+<script src="chai.js"></script>
+<script src="mocha.js"></script>
+<script src="lodash.compat.min.js"></script>
+<script src="coffee-script.js"></script>
+<script type="text/coffeescript">
+    mocha.setup
+        ui: 'bdd'
+</script>
+<script src="lags.coffee" type="text/coffeescript"></script>
+<script src="lags-tests.coffee" type="text/coffeescript"></script>
+<script type="text/coffeescript">
+    mocha.checkLeaks()
+    mocha.globals([])
+    mocha.run()
+</script>
+</body>
+</html>
