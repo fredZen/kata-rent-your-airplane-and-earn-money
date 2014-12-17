@@ -21,7 +21,7 @@ describe "profit", ->
       order 0, 5, 17
     ]).to.equal 17
 
-  it.skip "is the sum of the prices of 2 consecutive orders", ->
+  it "is the sum of the prices of 2 consecutive orders", ->
     (expect profit [
       order 0, 5, 10
       order 5, 9, 7

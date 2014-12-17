@@ -5,10 +5,7 @@ landing_time = ({start, duration}) -> start + duration
 profit = (orders) ->
   times = key_times orders
   orders_by_landing_time = by_landing_time orders
-  switch orders.length
-    when 0 then 0
-    when 1 then orders[0].price
-    when 2 then Math.max orders[0].price, orders[1].price
+  aux_profit 0, times, orders_by_landing_time
 
 aux_profit = (max_profits, times, orders_by_landing_time, profits_by_time={}) ->
   switch times.length
