@@ -1,5 +1,5 @@
 {expect} = chai
-{profit, order, key_times, by_landing_time} = lags
+{aux_profit, by_landing_time, key_times, order, profit} = lags
 
 sample = [
   order 0, 5, 10
@@ -27,15 +27,23 @@ describe "profit", ->
       order 5, 5, 17
     ]).to.equal 27
 
+describe "aux_profit", ->
+  it "is the max profit so far when there are no more points in time to examine", ->
+    (expect aux_profit 15, [], {}).to.equal 15
+
+  it "is the max profit so far when there are no orders for the point in time to examine", ->
+    (expect aux_profit 15, [0], {}).to.equal 15
+
+  it "is profit of the order because it is bigger than the max profit so far", ->
+    (expect aux_profit 0, [5], {5: [order 0, 5, 10]}).to.equal 10
+
 describe "key_times", ->
   it "is the list of take off and landing times", ->
-    times = key_times sample
-    (expect times).to.deep.equal [0, 3, 5, 6, 10, 14, 15]
+    (expect key_times sample).to.deep.equal [0, 3, 5, 6, 10, 14, 15]
 
 describe "by_landing_time", ->
   it "is the lis of orders grouped by landing time", ->
-    orders = by_landing_time sample
-    (expect orders).to.deep.equal
+    (expect by_landing_time sample).to.deep.equal
       5: [order 0, 5, 10]
       10: [order 3, 7, 14]
       14: [order 5, 9, 7]
