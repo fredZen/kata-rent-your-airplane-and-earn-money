@@ -35,7 +35,7 @@ describe "aux_profit", ->
     (expect aux_profit 15, [0], {}).to.equal 15
 
   it "is profit of the order because it is bigger than the max profit so far", ->
-    (expect aux_profit 0, [5], {5: [order 0, 5, 10]}, {0: 0}).to.equal 10
+    (expect aux_profit 0, [5], {5: [order 0, 5, 10]}).to.equal 10
 
   it "sums price of the flight with profits for connecting flights so far", ->
     (expect aux_profit 10, [14], {14: [order 5, 9, 7]}, {5: 10}).to.equal 17

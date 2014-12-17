@@ -10,12 +10,15 @@ profit = (orders) ->
     when 1 then orders[0].price
     when 2 then Math.max orders[0].price, orders[1].price
 
-aux_profit = (max_profits, times, orders_by_landing_time, profits_by_time) ->
+aux_profit = (max_profits, times, orders_by_landing_time, profits_by_time={}) ->
   switch times.length
     when 0 then max_profits
     else
       time = _.head(times)
-      landing_profit = _(orders_by_landing_time[time]).map(({start, price}) -> price + profits_by_time[start]).max()
+      landing_profit = _(orders_by_landing_time[time]).map(({start, price}) ->
+        profit_so_far = profits_by_time[start] || 0
+        price + profit_so_far
+      ).max()
       Math.max(max_profits, landing_profit)
 
 key_times = (orders) ->
