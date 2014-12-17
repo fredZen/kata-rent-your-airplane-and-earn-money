@@ -27,6 +27,9 @@ describe "profit", ->
       order 5, 9, 7
     ]).to.equal 17
 
+  it "works with a full example", ->
+    (expect profit sample).to.equal 18
+
 describe "aux_profit", ->
   it "is the max profit so far when there are no more points in time to examine", ->
     (expect aux_profit 15, [], {}).to.equal 15
