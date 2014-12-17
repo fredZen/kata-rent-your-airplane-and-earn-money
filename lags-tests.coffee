@@ -1,5 +1,5 @@
 {expect} = chai
-{profit, order, key_times} = lags
+{profit, order, key_times, by_landing_time} = lags
 
 sample = [
   order 0, 5, 10
@@ -31,3 +31,12 @@ describe "key_times", ->
   it "is the list of take off and landing times", ->
     times = key_times sample
     (expect times).to.deep.equal [0, 3, 5, 6, 10, 14, 15]
+
+describe "by_landing_time", ->
+  it "is the lis of orders grouped by landing time", ->
+    orders = by_landing_time sample
+    (expect orders).to.deep.equal
+      5: [order 0, 5, 10]
+      10: [order 3, 7, 14]
+      14: [order 5, 9, 7]
+      15: [order 6, 9, 8]
