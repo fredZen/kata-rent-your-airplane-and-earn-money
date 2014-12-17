@@ -24,8 +24,8 @@ describe "profit", ->
   it.skip "is the sum of the prices of 2 consecutive orders", ->
     (expect profit [
       order 0, 5, 10
-      order 5, 5, 17
-    ]).to.equal 27
+      order 5, 9, 7
+    ]).to.equal 17
 
 describe "aux_profit", ->
   it "is the max profit so far when there are no more points in time to examine", ->
@@ -35,7 +35,10 @@ describe "aux_profit", ->
     (expect aux_profit 15, [0], {}).to.equal 15
 
   it "is profit of the order because it is bigger than the max profit so far", ->
-    (expect aux_profit 0, [5], {5: [order 0, 5, 10]}).to.equal 10
+    (expect aux_profit 0, [5], {5: [order 0, 5, 10]}, {0: 0}).to.equal 10
+
+  it "sums price of the flight with profits for connecting flights so far", ->
+    (expect aux_profit 10, [14], {14: [order 5, 9, 7]}, {5: 10}).to.equal 17
 
 describe "key_times", ->
   it "is the list of take off and landing times", ->
