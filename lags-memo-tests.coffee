@@ -23,6 +23,12 @@ describe "Memoized lags", ->
         order 0, 5, 17
       ]).to.equal 17
 
+    it "is the sum of the prices of 2 consecutive orders", ->
+      (expect profit [
+        order 0, 5, 10
+        order 5, 9, 7
+      ]).to.equal 17
+
   describe "previous time", ->
     it "matches a time to the previous time in the list", ->
       (expect previous_times [1,4,7,10]).to.deep.equal(

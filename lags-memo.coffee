@@ -4,7 +4,9 @@ profit = (orders) ->
   profits_up_to = _.memoize (time) ->
     switch previous[time]
       when undefined then 0
-      else _(orders_by_landing_time[time]).pluck('price').max().value()
+      else _(orders_by_landing_time[time]).map(({start, price}) ->
+        price + profits_up_to start
+      ).max().value()
 
   times = key_times orders
   last = _.last times
