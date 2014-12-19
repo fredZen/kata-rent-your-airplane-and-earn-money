@@ -13,4 +13,10 @@ key_times = (orders) ->
 previous_times = (times) ->
   _(times).tail().zipObject(times).value()
 
-@order = {order, landing_time, key_times, previous_times, by_landing_time}
+free_flights = (times) ->
+  _(times).initial().zip(_.tail(times)).map(([start, arrival]) ->
+    order start, (arrival - start), 0
+  ).value()
+
+
+@order = {order, landing_time, key_times, previous_times, by_landing_time, free_flights}
