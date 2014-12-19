@@ -29,6 +29,12 @@ describe "Memoized lags", ->
         order 5, 9, 7
       ]).to.equal 17
 
+    it "prefer taking a flight that profits more than one that lands later", ->
+      (expect profit [
+        order 0, 3, 10
+        order 0, 5, 7
+      ]).to.equal 10
+
   describe "previous time", ->
     it "matches a time to the previous time in the list", ->
       (expect previous_times [1,4,7,10]).to.deep.equal(
