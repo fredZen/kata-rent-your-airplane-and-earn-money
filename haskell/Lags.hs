@@ -26,11 +26,9 @@ profit :: [Order] -> Money
 profit [] = 0
 profit os = profitAt (lastTime p)
     where p = plan os
-          profitAt :: Timestamp -> Money
-          profitAt = memoize $ \t -> case Map.lookup t (ordersByLanding p) of
-              Nothing -> 0
-              Just os -> maximum $ map profitFor os
-          profitFor :: Order -> Money
+          profitAt = memoize $ maybe 0 maxProfit . ordersLandingAt
+          ordersLandingAt = flip Map.lookup $ ordersByLanding p
+          maxProfit = maximum . map profitFor
           profitFor o = (price o) + (profitAt $ takeOff o)
 
 memoize :: (Int -> a) -> (Int -> a)
