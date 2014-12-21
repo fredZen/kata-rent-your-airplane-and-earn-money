@@ -34,13 +34,18 @@ profit os = profitAt (lastTime p)
 
 plan :: [Order] -> Plan
 plan os = Plan byLanding lastTime
-    where times = Data.List.map head $ group $ sortBy (flip compare) $ (Data.List.map takeOff os) ++ (Data.List.map landing os)
+    where times = Data.List.map head $ group $ sortBy (flip compare) $ (Data.List.map takeOff os) ++ Data.List.map landing os
           lastTime = head times
-          fakeFlights = Data.List.map (\(t, l) -> Order t (l - t) 0) $ zip (tail times) times
+          fakeFlights = makeFakeOrders times
           byLanding = groupOrdersByLanding $ os ++ fakeFlights
+
+makeFakeOrders :: [Timestamp] -> [Order]
+makeFakeOrders = Data.List.map makeFakeOrder . pairWithNext
+    where pairWithNext = uncurry zip ^<< tail &&& id
+          makeFakeOrder(t, l) = Order t (l - t) 0
 
 groupOrdersByLanding :: [Order] -> Map Timestamp [Order]
 groupOrdersByLanding =  fromList . prependLandingTime . groupByLanding . sortByLanding
     where sortByLanding = sortBy (compare `on` landing)
           groupByLanding = groupBy ((==) `on` landing)
-          prependLandingTime = Data.List.map (landing . head &&& id)
+          prependLandingTime = Data.List.map $ landing . head &&& id
