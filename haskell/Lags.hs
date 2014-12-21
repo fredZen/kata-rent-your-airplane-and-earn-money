@@ -16,6 +16,7 @@ profit os = maxProfit
           maxProfit = case p of
               [] -> 0
               [o] -> price o
+              [o, o'] -> max (price o) (price o')
 
 plan :: [Order] -> Plan
 plan = id
