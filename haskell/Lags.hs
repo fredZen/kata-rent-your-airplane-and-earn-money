@@ -16,7 +16,7 @@ data Order = Order { takeOff :: Timestamp
              deriving (Eq, Show)
 
 landing :: Order -> Timestamp
-landing o = takeOff o + duration o
+landing = uncurry (+) ^<< takeOff &&& duration
 
 data Plan = Plan { ordersByLanding :: Map Timestamp [Order]
                  , lastTime :: Timestamp}
@@ -29,7 +29,7 @@ profit os = profitAt (lastTime p)
           profitAt = memoize $ maybe 0 maxProfit . ordersLandingAt
           ordersLandingAt = flip Map.lookup $ ordersByLanding p
           maxProfit = maximum . map profitFor
-          profitFor o = (price o) + (profitAt $ takeOff o)
+          profitFor = uncurry (+) ^<< price &&& profitAt . takeOff
 
 memoize :: (Int -> a) -> (Int -> a)
 memoize f = (map f [0 ..] !!)
