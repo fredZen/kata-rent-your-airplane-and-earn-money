@@ -1,7 +1,8 @@
 module Main where
 
-import Test.Hspec
+import Data.Map
 import Lags
+import Test.Hspec
 
 main :: IO ()
 main = hspec $ do
@@ -21,3 +22,11 @@ main = hspec $ do
 
         it "should be the sum of the prices of two consecutive orders" $ do
             (profit [Order 0 5 17, Order 5 5 10]) `shouldBe` 27
+
+        it "work with gaps between orders" $ do
+            (profit [Order 0 4 17, Order 5 5 10]) `shouldBe` 27
+
+    describe "plan" $ do
+        it "connects times with free flights" $ do
+            let p = plan [Order 0 4 17, Order 5 5 10]
+            (Data.Map.lookup 5 $ ordersByLanding p) `shouldBe` (Just [Order 4 1 0])
