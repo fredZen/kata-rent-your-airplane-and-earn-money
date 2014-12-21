@@ -15,3 +15,6 @@ main = hspec $ do
         it "should be the price of the more expensive of two overlapping orders" $ do
             (profit [Order 0 5 17, Order 0 5 10]) `shouldBe` 17
             (profit [Order 0 5 10, Order 0 5 17]) `shouldBe` 17
+
+        it "should be the sum of the prices of two consecutive orders" $ do
+            (profit [Order 0 5 17, Order 5 5 10]) `shouldBe` 27
