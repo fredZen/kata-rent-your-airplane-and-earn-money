@@ -1,6 +1,7 @@
 module Lags where
 
 import Data.List
+import Data.Function
 
 type Timestamp = Int
 type Duration = Int
@@ -27,4 +28,4 @@ plan :: [Order] -> Plan
 plan = Plan . groupBy sameLanding
 
 sameLanding :: Order -> Order -> Bool
-sameLanding o o' = (landing o) == (landing o')
+sameLanding = ( == ) `on` landing
