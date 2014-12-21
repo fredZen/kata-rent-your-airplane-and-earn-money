@@ -3,7 +3,8 @@ module Lags where
 import Control.Arrow
 import Data.Function
 import Data.List
-import Data.Map
+import Data.Map (Map)
+import qualified Data.Map as Map
 
 type Timestamp = Int
 type Duration = Int
@@ -26,9 +27,9 @@ profit [] = 0
 profit os = profitAt (lastTime p)
     where p = plan os
           profitAt :: Timestamp -> Money
-          profitAt t = case Data.Map.lookup t (ordersByLanding p) of
+          profitAt t = case Map.lookup t (ordersByLanding p) of
               Nothing -> 0
-              Just os -> maximum $ Data.List.map profitFor os
+              Just os -> maximum $ map profitFor os
           profitFor :: Order -> Money
           profitFor o = (price o) + (profitAt $ takeOff o)
 
@@ -42,18 +43,18 @@ plan os = Plan byLanding lastTime
 extractTimes :: [Order] -> [Timestamp]
 extractTimes = nubSorted . sortDesc . extractTakeOffAndLanding
     where extractTakeOffAndLanding = uncurry (++) ^<< extractTakeOff &&& extractLanding
-          extractTakeOff = Data.List.map takeOff
-          extractLanding = Data.List.map landing
+          extractTakeOff = map takeOff
+          extractLanding = map landing
           sortDesc = sortBy (flip compare)
-          nubSorted = Data.List.map head . group
+          nubSorted = map head . group
 
 makeFakeOrders :: [Timestamp] -> [Order]
-makeFakeOrders = Data.List.map makeFakeOrder . pairWithNext
+makeFakeOrders = map makeFakeOrder . pairWithNext
     where pairWithNext = uncurry zip ^<< tail &&& id
           makeFakeOrder(t, l) = Order t (l - t) 0
 
 groupOrdersByLanding :: [Order] -> Map Timestamp [Order]
-groupOrdersByLanding =  fromList . prependLandingTime . groupByLanding . sortByLanding
+groupOrdersByLanding =  Map.fromList . prependLandingTime . groupByLanding . sortByLanding
     where sortByLanding = sortBy (compare `on` landing)
           groupByLanding = groupBy ((==) `on` landing)
-          prependLandingTime = Data.List.map $ landing . head &&& id
+          prependLandingTime = map $ landing . head &&& id
