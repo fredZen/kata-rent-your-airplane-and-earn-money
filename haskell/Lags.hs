@@ -1,5 +1,7 @@
 module Lags where
 
+import Data.List
+
 type Timestamp = Int
 type Duration = Int
 type Money = Int
@@ -22,7 +24,7 @@ profit os = maxProfit
               [[o], [o']] -> (price o) + (price o')
 
 plan :: [Order] -> Plan
-plan [o] = [[o]]
-plan [o, o']
-    | (landing o == landing o') = [[o, o']]
-    | otherwise = [[o], [o']]
+plan = groupBy sameLanding
+
+sameLanding :: Order -> Order -> Bool
+sameLanding o o' = (landing o) == (landing o')
