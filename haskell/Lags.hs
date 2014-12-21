@@ -9,4 +9,5 @@ data Order = Order { takeOff :: Timestamp
                    , price :: Money }
 
 profit :: [Order] -> Money
-profit _ = 0
+profit [] = 0
+profit [o] = price o
