@@ -13,18 +13,18 @@ data Order = Order { takeOff :: Timestamp
 landing :: Order -> Timestamp
 landing o = takeOff o + duration o
 
-type Plan = [[Order]]
+data Plan = Plan {orders :: [[Order]] }
 
 profit :: [Order] -> Money
 profit [] = 0
 profit os = maxProfit
     where p = plan os
-          maxProfit = case p of
+          maxProfit = case orders p of
               [os] -> (maximum . map price) os
               [[o], [o']] -> (price o) + (price o')
 
 plan :: [Order] -> Plan
-plan = groupBy sameLanding
+plan = Plan . groupBy sameLanding
 
 sameLanding :: Order -> Order -> Bool
 sameLanding o o' = (landing o) == (landing o')
