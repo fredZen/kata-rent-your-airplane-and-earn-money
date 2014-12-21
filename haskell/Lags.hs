@@ -8,6 +8,14 @@ data Order = Order { takeOff :: Timestamp
                    , duration :: Duration
                    , price :: Money }
 
+type Plan = [Order]
+
 profit :: [Order] -> Money
-profit [] = 0
-profit [o] = price o
+profit os = maxProfit
+    where p = plan os
+          maxProfit = case p of
+              [] -> 0
+              [o] -> price o
+
+plan :: [Order] -> Plan
+plan = id
