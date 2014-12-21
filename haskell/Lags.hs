@@ -33,8 +33,7 @@ profit os = profitAt (lastTime p)
 plan :: [Order] -> Plan
 plan os = Plan byLanding lastTime
     where times = Data.List.map head $ group $ sortBy (flip compare) $ (Data.List.map takeOff os) ++ (Data.List.map landing os)
-          byLanding = fromList $ Data.List.map (landing . head &&& id) $ groupBy sameLanding os
           lastTime = head times
-
-sameLanding :: Order -> Order -> Bool
-sameLanding = ( == ) `on` landing
+          sorted = sortBy (compare `on` landing) os
+          grouped = groupBy ((==) `on` landing) sorted
+          byLanding = fromList $ Data.List.map (landing . head &&& id) grouped
