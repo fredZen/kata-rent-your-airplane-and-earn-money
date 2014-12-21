@@ -32,7 +32,7 @@ profit os = profitAt (lastTime p)
 
 plan :: [Order] -> Plan
 plan os = Plan byLanding lastTime
-    where times = sortBy (flip compare) $ nub $ (Data.List.map takeOff os) ++ (Data.List.map landing os)
+    where times = Data.List.map head $ group $ sortBy (flip compare) $ (Data.List.map takeOff os) ++ (Data.List.map landing os)
           byLanding = fromList $ Data.List.map (landing . head &&& id) $ groupBy sameLanding os
           lastTime = head times
 
