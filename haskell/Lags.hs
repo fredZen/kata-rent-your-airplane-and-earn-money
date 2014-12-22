@@ -28,28 +28,23 @@ profit :: [Order] -> Money
 profit [] = 0
 profit os = profitAt (lastTime p)
     where p = plan os
-          profitAt = memoize $ maybe 0 maxProfit . ordersLandingAt
-          ordersLandingAt = flip Map.lookup $ ordersByLanding p
-          maxProfit = maximum . map profitFor
+          profitAt = memoize $
+              (flip Map.lookup $ ordersByLanding p) >>>
+              maybe 0 (maximum . map profitFor)
           profitFor = compose (+) price $ profitAt . takeOff
 
 memoize :: (Int -> a) -> (Int -> a)
 memoize f = (map f [0 ..] !!)
 
 plan :: [Order] -> Plan
-plan os = Plan byLanding lastTime
+plan os = Plan (groupOrdersByLanding $ os ++ (makeFakeOrders times)) $ head times
     where times = extractTimes os
-          lastTime = head times
-          fakeFlights = makeFakeOrders times
-          byLanding = groupOrdersByLanding $ os ++ fakeFlights
 
 extractTimes :: [Order] -> [Timestamp]
-extractTimes = nubSorted . sortDesc . extractTakeOffAndLanding
-    where extractTakeOffAndLanding = compose (++) extractTakeOff extractLanding
-          extractTakeOff = map takeOff
-          extractLanding = map landing
-          sortDesc = sortBy (flip compare)
-          nubSorted = map head . group
+extractTimes =
+        compose (++) (map takeOff) (map landing) >>>
+        sortBy (flip compare) >>>
+        group >>> map head
 
 makeFakeOrders :: [Timestamp] -> [Order]
 makeFakeOrders = map makeFakeOrder . pairWithNext
@@ -57,7 +52,8 @@ makeFakeOrders = map makeFakeOrder . pairWithNext
           makeFakeOrder(t, l) = Order t (l - t) 0
 
 groupOrdersByLanding :: [Order] -> Map Timestamp [Order]
-groupOrdersByLanding =  Map.fromList . prependLandingTime . groupByLanding . sortByLanding
-    where sortByLanding = sortBy (compare `on` landing)
-          groupByLanding = groupBy ((==) `on` landing)
-          prependLandingTime = map $ compose (,) (landing . head) id
+groupOrdersByLanding =
+        sortBy (compare `on` landing) >>>
+        groupBy ((==) `on` landing) >>>
+        (map $ compose (,) (landing . head) id) >>>
+        Map.fromList
