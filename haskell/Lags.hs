@@ -23,7 +23,6 @@ compose f g h = uncurry f ^<< g &&& h
 
 data Plan = Plan { ordersByLanding :: Map Timestamp [Order]
                  , lastTime :: Timestamp}
-            deriving Show
 
 profit :: [Order] -> Money
 profit [] = 0
