@@ -16,7 +16,10 @@ data Order = Order { takeOff :: Timestamp
              deriving (Eq, Show)
 
 landing :: Order -> Timestamp
-landing = uncurry (+) ^<< takeOff &&& duration
+landing = compose (+) takeOff duration
+
+compose :: (b -> b' -> c) -> (a -> b) -> (a -> b') -> (a -> c)
+compose f g h = uncurry f ^<< g &&& h
 
 data Plan = Plan { ordersByLanding :: Map Timestamp [Order]
                  , lastTime :: Timestamp}
@@ -29,7 +32,7 @@ profit os = profitAt (lastTime p)
           profitAt = memoize $ maybe 0 maxProfit . ordersLandingAt
           ordersLandingAt = flip Map.lookup $ ordersByLanding p
           maxProfit = maximum . map profitFor
-          profitFor = uncurry (+) ^<< price &&& profitAt . takeOff
+          profitFor = compose (+) price $ profitAt . takeOff
 
 memoize :: (Int -> a) -> (Int -> a)
 memoize f = (map f [0 ..] !!)
@@ -43,7 +46,7 @@ plan os = Plan byLanding lastTime
 
 extractTimes :: [Order] -> [Timestamp]
 extractTimes = nubSorted . sortDesc . extractTakeOffAndLanding
-    where extractTakeOffAndLanding = uncurry (++) ^<< extractTakeOff &&& extractLanding
+    where extractTakeOffAndLanding = compose (++) extractTakeOff extractLanding
           extractTakeOff = map takeOff
           extractLanding = map landing
           sortDesc = sortBy (flip compare)
@@ -51,11 +54,11 @@ extractTimes = nubSorted . sortDesc . extractTakeOffAndLanding
 
 makeFakeOrders :: [Timestamp] -> [Order]
 makeFakeOrders = map makeFakeOrder . pairWithNext
-    where pairWithNext = uncurry zip ^<< tail &&& id
+    where pairWithNext = compose zip tail id
           makeFakeOrder(t, l) = Order t (l - t) 0
 
 groupOrdersByLanding :: [Order] -> Map Timestamp [Order]
 groupOrdersByLanding =  Map.fromList . prependLandingTime . groupByLanding . sortByLanding
     where sortByLanding = sortBy (compare `on` landing)
           groupByLanding = groupBy ((==) `on` landing)
-          prependLandingTime = map $ landing . head &&& id
+          prependLandingTime = map $ compose (,) (landing . head) id
