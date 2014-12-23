@@ -1,4 +1,4 @@
-module Lags where
+module Lags.Order where
 
 import Control.Arrow
 import Data.Function
@@ -22,22 +22,10 @@ compose :: (b -> b' -> c) -> (a -> b) -> (a -> b') -> (a -> c)
 compose f g h = uncurry f ^<< g &&& h
 
 data Plan = Plan { ordersByLanding :: Map Timestamp [Order]
-                 , lastTime :: Timestamp}
-
-profit :: [Order] -> Money
-profit [] = 0
-profit os = profitAt (lastTime p)
-    where p = plan os
-          profitAt = memoize $
-              (flip Map.lookup $ ordersByLanding p) >>>
-              maybe 0 (maximum . map profitFor)
-          profitFor = compose (+) price $ profitAt . takeOff
-
-memoize :: (Int -> a) -> (Int -> a)
-memoize f = (map f [0 ..] !!)
+                 , times :: [Timestamp] }
 
 plan :: [Order] -> Plan
-plan os = Plan (groupOrdersByLanding $ os ++ (makeFakeOrders times)) $ head times
+plan os = Plan (groupOrdersByLanding $ os ++ (makeFakeOrders times)) $ times
     where times = extractTimes os
 
 extractTimes :: [Order] -> [Timestamp]
