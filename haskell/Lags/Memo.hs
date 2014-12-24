@@ -7,7 +7,7 @@ import Data.Map (Map)
 import qualified Data.Map as Map
 import Lags.Order
 
-profit :: [Order] -> Money
+profit :: Problem -> Money
 profit [] = 0
 profit os = profitAt (head $ times p)
     where p = plan os

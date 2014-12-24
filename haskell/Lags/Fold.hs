@@ -1,13 +1,12 @@
 module Lags.Fold where
 
-import Control.Arrow
 import Data.Function
 import Data.List
 import Data.Map (Map, (!))
 import qualified Data.Map as Map
 import Lags.Order
 
-profit :: [Order] -> Money
+profit :: Problem -> Money
 profit [] = 0
 profit os = (foldr (addProfit $ ordersByLanding p) Map.empty (times p)) ! (head (times p))
     where p = plan os

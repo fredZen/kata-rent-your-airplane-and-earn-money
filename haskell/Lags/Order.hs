@@ -15,6 +15,8 @@ data Order = Order { takeOff :: Timestamp
                    , price :: Money }
              deriving (Eq, Show)
 
+type Problem = [Order]
+
 landing :: Order -> Timestamp
 landing = compose (+) takeOff duration
 
@@ -24,11 +26,11 @@ compose f g h = uncurry f ^<< g &&& h
 data Plan = Plan { ordersByLanding :: Map Timestamp [Order]
                  , times :: [Timestamp] }
 
-plan :: [Order] -> Plan
+plan :: Problem -> Plan
 plan os = Plan (groupOrdersByLanding $ os ++ (makeFakeOrders times)) $ times
     where times = extractTimes os
 
-extractTimes :: [Order] -> [Timestamp]
+extractTimes :: Problem -> [Timestamp]
 extractTimes =
         compose (++) (map takeOff) (map landing) >>>
         sortBy (flip compare) >>>
