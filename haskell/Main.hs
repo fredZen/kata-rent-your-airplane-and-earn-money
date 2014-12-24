@@ -58,3 +58,12 @@ main = hspec $ do
                             , "0 5 10"
                             , "1"
                             , "3 7 12"]) `shouldBe` [[Order 0 5 10], [Order 3 7 12]]
+
+    describe "SPOJ solver" $ do
+        it "finds the solution to the standard problem" $ do
+            (solve $ unlines [ "1"
+                            , "4"
+                            , "0 5 10"
+                            , "3 7 14"
+                            , "5 9 7"
+                            , "6 9 8" ]) `shouldBe` unlines ["18"]
