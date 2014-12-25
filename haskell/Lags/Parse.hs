@@ -4,9 +4,11 @@ import Control.Arrow
 import Data.List
 import Lags.Order
 import Lags.Memo
+import Data.ByteString (ByteString)
+import qualified Data.ByteString.Char8 as BS
 
-parse :: String -> [Problem]
-parse = lines >>> (map words) >>> (map $ map read) >>> parseProblems
+parse :: ByteString -> [Problem]
+parse = BS.lines >>> (map BS.words) >>> (map $ map (BS.readInt >>> \ (Just (i, _)) -> i)) >>> parseProblems
 
 parseProblems :: [[Int]] -> [Problem]
 parseProblems ([numProblems]:lines) = snd $ mapAccumL (flip ($)) lines parsers
@@ -19,5 +21,5 @@ parseProblem ([numOrders]:ls) = (rest, map makeOrder orders)
 makeOrder :: [Int] -> Order
 makeOrder [t, d, p] = Order t d p
 
-solve :: String -> String
-solve = parse >>> map (profit >>> show) >>> unlines
+solve :: ByteString -> ByteString
+solve = parse >>> map (profit >>> show >>> BS.pack) >>> BS.unlines

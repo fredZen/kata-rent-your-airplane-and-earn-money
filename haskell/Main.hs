@@ -1,69 +1,81 @@
 module Main where
 
-import Data.Map
-import qualified Lags.Fold
-import qualified Lags.Memo
-import Lags.Order
-import Lags.Parse
-import Test.Hspec
-
-lagsSpec profit = do
-    it "should be zero when there is no order" $ do
-        (profit []) `shouldBe` 0
-
-    it "should be the price of the only order" $ do
-        (profit [Order 0 5 17]) `shouldBe` 17
-
-    it "should be the price of the more expensive of two overlapping orders" $ do
-        (profit [Order 0 5 17, Order 0 5 10]) `shouldBe` 17
-        (profit [Order 0 5 10, Order 0 5 17]) `shouldBe` 17
-
-    it "should not be disturbed by out-of-order arrival times" $ do
-        (profit [Order 0 5 17, Order 0 3 3, Order 0 5 10]) `shouldBe` 17
-
-    it "should be the sum of the prices of two consecutive orders" $ do
-        (profit [Order 0 5 17, Order 5 5 10]) `shouldBe` 27
-
-    it "work with gaps between orders" $ do
-        (profit [Order 0 4 17, Order 5 5 10]) `shouldBe` 27
+import Control.Arrow
+import Data.Function
+import Data.List
+import Data.Map (Map, (!))
+import qualified Data.Map as Map
+import Data.ByteString (ByteString)
+import qualified Data.ByteString.Char8 as BS
 
 main :: IO ()
-main = hspec $ do
-    describe "Compute profit by folding" $
-        lagsSpec Lags.Fold.profit
+main = BS.interact solve
 
-    describe "Compute profit by memoizing" $
-        lagsSpec Lags.Memo.profit
+solve :: ByteString -> ByteString
+solve = parse >>> map (profit >>> show >>> BS.pack) >>> BS.unlines
 
-    describe "plan" $ do
-        it "connects times with free flights" $ do
-            let p = plan [Order 0 4 17, Order 5 5 10]
-            (Data.Map.lookup 5 $ ordersByLanding p) `shouldBe` (Just [Order 4 1 0])
+type Timestamp = Int
+type Duration = Int
+type Money = Int
 
-    describe "SPOJ parser" $ do
-        it "finds a single problem with a single order" $ do
-            (parse $ unlines [ "1"
-                            , "1"
-                            , "0 5 10"]) `shouldBe` [[Order 0 5 10]]
+data Order = Order { takeOff :: Timestamp
+                   , duration :: Duration
+                   , price :: Money }
+             deriving (Eq, Show)
 
-        it "finds 2 orders" $ do
-            (parse $ unlines [ "1"
-                            , "2"
-                            , "0 5 10"
-                            , "3 7 12"]) `shouldBe` [[Order 0 5 10, Order 3 7 12]]
+type Problem = [Order]
 
-        it "finds 2 problemts" $ do
-            (parse $ unlines [ "2"
-                            , "1"
-                            , "0 5 10"
-                            , "1"
-                            , "3 7 12"]) `shouldBe` [[Order 0 5 10], [Order 3 7 12]]
+parse :: ByteString -> [Problem]
+parse = BS.lines >>> (map BS.words) >>> (map $ map (BS.readInt >>> \ (Just (i, _)) -> i)) >>> parseProblems
 
-    describe "SPOJ solver" $ do
-        it "finds the solution to the standard problem" $ do
-            (solve $ unlines [ "1"
-                            , "4"
-                            , "0 5 10"
-                            , "3 7 14"
-                            , "5 9 7"
-                            , "6 9 8" ]) `shouldBe` unlines ["18"]
+parseProblems :: [[Int]] -> [Problem]
+parseProblems ([numProblems]:lines) = snd $ mapAccumL (flip ($)) lines parsers
+    where parsers = replicate numProblems parseProblem
+
+parseProblem :: [[Int]] -> ([[Int]], Problem)
+parseProblem ([numOrders]:ls) = (rest, map makeOrder orders)
+    where (orders, rest) = splitAt numOrders ls
+
+makeOrder :: [Int] -> Order
+makeOrder [t, d, p] = Order t d p
+
+landing :: Order -> Timestamp
+landing = compose (+) takeOff duration
+
+compose :: (b -> b' -> c) -> (a -> b) -> (a -> b') -> (a -> c)
+compose f g h = uncurry f ^<< g &&& h
+
+data Plan = Plan { ordersByLanding :: Map Timestamp [Order]
+                 , times :: [Timestamp] }
+
+profit :: Problem -> Money
+profit [] = 0
+profit os = (foldr (addProfit $ ordersByLanding p) Map.empty (times p)) ! (head (times p))
+    where p = plan os
+
+addProfit :: Map Timestamp [Order] -> Timestamp -> Map Timestamp Money -> Map Timestamp Money
+addProfit ordersByLanding l profitByLanding = Map.insert l maxProfit profitByLanding
+  where maxProfit = maybe 0 (maximum . map profitFor) $ Map.lookup l ordersByLanding
+        profitFor = compose (+) price $ (profitByLanding !) . takeOff
+
+plan :: Problem -> Plan
+plan os = Plan (groupOrdersByLanding $ os ++ (makeFakeOrders times)) $ times
+    where times = extractTimes os
+
+extractTimes :: Problem -> [Timestamp]
+extractTimes =
+        compose (++) (map takeOff) (map landing) >>>
+        sortBy (flip compare) >>>
+        group >>> map head
+
+makeFakeOrders :: [Timestamp] -> [Order]
+makeFakeOrders = map makeFakeOrder . pairWithNext
+    where pairWithNext = compose zip tail id
+          makeFakeOrder(t, l) = Order t (l - t) 0
+
+groupOrdersByLanding :: [Order] -> Map Timestamp [Order]
+groupOrdersByLanding =
+        sortBy (compare `on` landing) >>>
+        groupBy ((==) `on` landing) >>>
+        (map $ compose (,) (landing . head) id) >>>
+        Map.fromList
